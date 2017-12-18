@@ -1,0 +1,29 @@
+<!--pages/detail/detail.wxml-->
+<import src="../../wxParse/wxParse.wxml"/>
+<view class='content'>
+  <view class='title'>{{article.title}}</view>
+  <view class='date'>{{article.date}}<view class='reading'>阅读量:{{article.read_cnt}}</view></view>
+  
+  <view class='htmlContent'>
+    <template is="wxParse" data="{{wxParseData:content.nodes}}"/>
+  </view>
+</view>
+<view class='comments'>
+  <view class='commentList' wx:if="{{comments}}">
+    <view class='comment' wx:for="{{comments}}" wx:key="{{index}}">
+      <view class='avater'>
+        <image src='{{item.avatar}}'></image>
+      </view>
+      <view class='userInfo'>
+        <view class='username'>{{item.username}}
+        <view class='time'>{{item.time}}</view></view>
+      <view class='commentContent'>{{item.content}}</view>
+      </view>
+    </view>
+  </view>
+  <view class='noComment' wx:else>暂无评论</view>
+</view>
+<view class='commentBar'>
+  <input class='commentInput' placeholder='请输入评论吧。。'></input>
+  <text class='commentBtn'>发表</text>
+</view>

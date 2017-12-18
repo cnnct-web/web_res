@@ -1,0 +1,18 @@
+<!--index.wxml-->
+<view>
+  <scroll-view class='sections' scroll-x="true">
+    <view class='section {{item.active ? "active":""}}' wx:for="{{sections}}" wx:key="{{index}}" wx:key="{{index}}" data-sid="{{item.section_id}}" bindtap='onSectionClick'>{{item.name}}</view>
+  </scroll-view>
+  <view class='articles'>
+    <view class='article' wx:for="{{articles}}" bindtap='onArticleClick' data-aid='{{item.article_id}}'>
+      <view class='left'>
+        <view class='title'>{{item.title}}</view>
+        <view class='date'>{{item.date}}</view>
+        <view class='comment'>评论（{{item.comment_cnt}}）</view>
+      </view>
+      <view class='right'>
+        <image class='cover' src='{{item.cover1}}'></image>
+      </view>
+    </view>
+  </view>
+</view>

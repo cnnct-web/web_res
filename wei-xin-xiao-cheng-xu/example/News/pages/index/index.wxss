@@ -1,0 +1,66 @@
+/**index.wxss**/
+.sections{
+  width: 100%;
+  height: 40px;
+  background: #f6f6f6;
+  position: fixed;
+  top: 0;
+  z-index: 1; /*悬浮固定*/
+  white-space: nowrap;  /* 实现横向滚动 */
+  border-bottom: 1px solid #999;
+}
+.section{
+  width: 20%;
+  height: 100%;
+  line-height: 40px;
+  color: #000;
+  text-align: center;
+  display: inline-block;
+}
+.section.active{
+  color: #f00;
+}
+.articles{
+  margin-top: 40px;
+}
+.article{
+  padding: 8px;
+  height: 80px;
+  border-bottom: 1px solid #eee;
+}
+.left{
+  width: 67%;
+  height: 100%;
+  position: relative;
+  float: left;
+}
+.right{
+  width: 33%;
+  height: 100%;
+  position: relative;
+  float: right;
+}
+.title{
+  font-size: 20px;
+  font-weight: 550;
+  color: #000;
+}
+.date{
+  position: absolute;
+  bottom: 0;
+  font-size: 16px;
+  font-weight: 400;
+  color: #aaa;
+}
+.comment{
+  position: absolute;
+  right: 8px;
+  bottom: 0;
+  font-size: 16px;
+  font-weight: 400;
+  color: #aaa;
+}
+.cover{
+  width: 100%;
+  height: 100%;
+}
