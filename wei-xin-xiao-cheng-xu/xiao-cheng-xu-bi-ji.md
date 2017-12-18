@@ -1,153 +1,203 @@
-微信小程序拥有web网页和Application共同的特征，我们的页面都不是孤立存在的，而是通过和其他页面进行交互，来共同完成系统的功能。今天我们来研究小程序页面之间的跳转方式。
-1.先导
-在Android中，我们Activity和Fragment都有栈的概念在里面，微信小程序页面也有栈的概念在里面。微信小程序页面跳转有四种方式：
-1.wx.navigateTo(OBJECT)；
-2.wx.redirectTo(OBJECT)；
-3.wx.switchTab(OBJECT)；
-4.wx.navigateBack(OBJECT)
-5.使用实现对应的跳转功能；
-分析：
-其中navigateTo是将原来的页面保存在页面栈中，在跳入到下一个页面的时候目标页面也进栈，只有在这个情况下点击手机的返回按钮才可以跳转到上一个页面；
-redirectTo和switchTab都是先清除栈中原来的页面，然后目标页面进栈，使用这两种跳转方式，都不能通过系统的返回键回到上一个页面，而是直接退出小程序；
-redirectTo使用的时候一定要配合tabBar或是页面里面可以再次跳转按钮，否则无法回到上一个页面；
-switchTab跳转的页面必须是tabBar中声明的页面；
-tabBar中定义的字段不能超过5个页面，小程序的页面栈层次也不能超过5层。
-navigateBack只能返回到页面栈中的指定页面，一般和navigateTo配合使用。
-wx.navigateTo 和 wx.redirectTo 不允许跳转到 tabbar 页面，只能用 wx.switchTab 跳转到 tabbar 页面
-2.页面跳转的具体操作
-(1)wx.navigateTo(OBJECT)
-保留当前页面，跳转到应用内的某个页面，使用wx.navigateBack可以返回到原页面。
-OBJECT 参数说明：
-参数 类型 必填 说明
-url String 是 需要跳转的应用内非 tabBar 的页面的路径 , 路径后可以带参数。参数与路径之间使用?分隔，参数键与参数值用=相连，不同参数用&分隔；如 ‘path?key=value&key2=value2’
-success Function 否 接口调用成功的回调函数
-fail Function 否 接口调用失败的回调函数
-complete Function 否 接口调用结束的回调函数（调用成功、失败都会执行）
-示例代码：
-wx.navigateTo({  url:'test?id=1'//实际路径要写全})
-1
-2
-3
-//test.jsPage({  onLoad: function(option){    console.log(option.query)    }})
-1
-2
-3
-4
-5
-6
-注意：为了不让用户在使用小程序时造成困扰，我们规定页面路径只能是五层，请尽量避免多层级的交互方式。
-（2）wx.redirectTo(OBJECT)
-关闭当前页面，跳转到应用内的某个页面。
-OBJECT 参数说明：
-参数 类型 必填 说明
-url String 是 需要跳转的应用内非 tabBar 的页面的路径，路径后可以带参数。参数与路径之间使用?分隔，参数键与参数值用=相连，不同参数用&分隔；如 ‘path?key=value&key2=value2’
-success Function 否 接口调用成功的回调函数
-fail Function 否 接口调用失败的回调函数
-complete Function 否 接口调用结束的回调函数（调用成功、失败都会执行）
-示例代码：
-wx.redirectTo({  url:'test?id=1'})
-1
-2
-3
-（3）wx.switchTab(OBJECT)
-跳转到 tabBar 页面，并关闭其他所有非 tabBar 页面
-OBJECT 参数说明：
-参数 类型 必填 说明
-url String 是 需要跳转的 tabBar 页面的路径（需在 app.json 的 tabBar 字段定义的页面），路径后不能带参数
-success Function 否 接口调用成功的回调函数
-fail Function 否 接口调用失败的回调函数
-complete Function 否 接口调用结束的回调函数（调用成功、失败都会执行）
-示例代码：
-{  "tabBar": {    "list": [{      "pagePath": "index",      "text": "首页"},{      "pagePath": "other",      "text": "其他"}]  }}
-1
-2
-3
-4
-5
-6
-7
-8
-9
-10
-11
-wx.switchTab({  url:'/index'})
-1
-2
-3
-（4）wx.navigateBack(OBJECT)
-关闭当前页面，返回上一页面或多级页面。可通过 getCurrentPages()) 获取当前的页面栈，决定需要返回几层。
-OBJECT 参数说明：
-参数 类型 必填 说明
-delta Number 1 返回的页面数，如果 delta 大于现有页面数，则返回到首页。
-示例代码：
-// 注意：调用 navigateTo 跳转时，调用该方法的页面会被加入堆栈，而 redirectTo 方法则不会。见下方示例代码// 此处是A页面wx.navigateTo({  url: 'B?id=1'})
-1
-2
-3
-4
-5
-6
-// 此处是B页面wx.navigateTo({  url: 'C?id=1'})
-1
-2
-3
-4
-// 在C页面内 navigateBack，将返回A页面wx.navigateBack({  delta: 2})
-1
-2
-3
-4
-（5）使用标签实现页面跳转
-navigator
-页面链接。
-参数 类型 必填 说明
-url String 应用内的跳转链接 
-redirect Boolean false 打开方式为页面重定向，对应 wx.redirectTo（将被废弃，推荐使用 open-type）
-open-type String navigate 可选值 ‘navigate’、’redirect’、’switchTab’，对应于wx.navigateTo、wx.redirectTo、wx.switchTab的功能
-hover-class String navigator-hover 指定点击时的样式类，当hover-class=”none”时，没有点击态效果
-hover-start-time Number 50 按住后多久出现点击态，单位毫秒
-hover-stay-time Number 600 手指松开后点击态保留时间，单位毫秒
-示例代码：
-"navigate?title=navigate" hover-class="navigator-hover">跳转到新页面  "redirect?title=redirect"open-type="redirect" hover-class="other-navigator-hover">在当前页打开  "index"open-type="switchTab" hover-class="other-navigator-hover">切换 Tab
-1
-2
-3
-3.页面的路由和生命周期
-（1）页面的路由
-在小程序中所有页面的路由全部由框架进行管理，对于路由的触发方式以及页面生命周期函数如下：
-路由方式 触发时机 路由后页面 路由前页面
-初始化 小程序打开的第一个页面 onLoad，onShow 
-打开新页面 调用 API wx.navigateTo 或使用组件 onLoad，onShow onHide
-页面重定向 调用 API wx.redirectTo 或使用组件 onLoad，onShow onUnload
-页面返回 调用 API wx.navigateBack 或用户按左上角返回按钮 onShow onUnload（多层页面返回每个页面都会按顺序触发onUnload）
-Tab 切换 调用 API wx.switchTab 或使用组件 或用户切换 Tab 各种情况请参考下表 
-Tab 切换对应的生命周期（以 A、B 页面为 Tabbar 页面，C 是从 A 页面打开的页面，D 页面是从 C 页面打开的页面为例）：
-当前页面 路由后页面 触发的生命周期（按顺序）
-A A Nothing happend
-A B A.onHide(), B.onLoad(), B.onShow()
-A B（再次打开） A.onHide(), B.onShow()
-C A C.onUnload(), A.onShow(）
-C B C.onUnload(), B.onLoad(), B.onShow()
-D B D.onUnload(), C.onUnload(), B.onLoad(), B.onShow()
-D（从分享进入） A D.onUnload(), A.onLoad(), A.onShow()
-D（从分享进入） B D.onUnload(), B.onLoad(), B.onShow()
-4.参数传递
-（1）通过路径传递参数
-通过路径传递参数在wx.navigateTo(OBJECT)、wx.redirectTo(OBJECT)和中使用方法相同
-示例代码：以wx.navigateTo为代表
-```wx.navigateTo({  url:'test?id=1'//实际路径要写全})
-1
-2
-3
-4
-//test.jsPage({  onLoad: function(option){    console.log(option.id)    }})
-1
-2
-3
-4
-5
-6
-参数与路径之间使用?分隔，参数键与参数值用=相连，不同参数用&分隔；
+#小程序开发准备#
+## **一、事前准备：** ##
 
-test?id=1 中id为参数键，1 为参数值
-在目的页面中onLoad（）方法中option对象即为参数对象，可以通过参数键来取出参数值
+微信小程序需要https请求，需要准备
+
+1：备案的域名：由于备案需要一定的时间，所以请事先准备
+
+2：受认可的证书
+https排查说明：http://www.wxapp-union.com/forum.php?mod=viewthread&tid=6483：一个账号只能发布一个小程序，如需发布多个，请申请多个。
+                                                                                                                                          
+
+1：必须通读运营规范；有需要禁止开发的事项需要了解；比如直播，游戏，抽奖，排行榜等；      
+
+常见拒绝情形：https://mp.weixin.qq.com/debug/wxadoc/product/reject.html?t=201714
+
+2：在微信下禁止的一些规则，在微信小程序中同样不能涉及；比如诱导分享；
+
+3：暂未开放的类目，无法申请，详情请在本站搜索“服务范围”的文章查看最新服务类目
+
+     推荐阅读并收藏：跳坑指南《七十》如何让微信小程序服务类目审核通过
+     1月7号更新图：
+
+
+4：微信小程序的问答
+
+    1：小程序没有入口，这和公众号一样。
+    
+    2：小程序没有官方商店
+    
+    3：小程序不会有订阅的关系
+    
+    4：很有限的通知能力，限制的非常严格
+    
+    5：小程序不能分享到朋友圈，但是可以分享到聊天和群聊之中。
+    
+    6：小程序不能做游戏
+    
+    7：用户能搜索到小程序，但我们会极力限制搜索能力，避免被滥用。
+    
+    8：目前有提供的关联是可以在公众号中看到该企业还有哪些小程序，反之亦然。
+    
+    9：会轻量提醒用户附近有哪些小程序存在，比如附近哪一家店提供小程序。
+    
+5：目前能看到的入口
+
+	- 线下扫码 ：用户可以在小程序中使用扫一扫。
+	- 对话分享 ：用户可以分享小程序或其中的任何一个页面给好友或群聊。
+	- 消息通知 ：商户可以发送模板消息给接受过服务的用户，用户可以在小程序内联系客服，支持文字和图片。
+	- 小程序切换 ：用户可以在使用小程序的过程中快速返回聊天。
+	- 历史列表 ：用户使用过的小程序会被放入列表，方便下次使用。
+	- 公众号关联 ：微信小程序可与公众号进行关联。
+	- 搜索查找 ：用户可直接根据名称或品牌搜索小程序。
+
+6：遇到无法解决或难以理解的难题时，请在官方社区内进行反馈：https://developers.weixin.qq.com
+
+7：你必须通过微信认证，才可以使用微信支付等功能：认证指引：https://mp.weixin.qq.com/debug/wxadoc/product/renzheng.html?t=201714
+
+# **二、个人开发前必读：** #
+个人开发和学习的同学，最关心的是个人额能不能申请和发布，目前的答案是：不能发布，但是可以开发；
+
+1：申请Appid：http://www.wxapp-union.com/forum.php?mod=viewthread&tid=495；
+     拥有appid后，即可开始真机预览；本方法仅用于测试和研究，无法认证和审核，请勿申请认证；
+
+2：如何真机预览：http://www.wxapp-union.com/forum.php?mod=viewthread&tid=1812
+
+3：如何设置体验者/开发者/体验版本/：http://www.wxapp-union.com/forum.php?mod=viewthread&tid=1248
+
+4：快捷键列表：
+
+格式调整
+
+    - Ctrl+S：保存文件（必须保存才可以看到效果）
+    - Ctrl+[， Ctrl+]：代码行缩进
+    - Ctrl+Shift+[， Ctrl+Shift+]：折叠打开代码块
+    - Ctrl+C Ctrl+V：复制粘贴，如果没有选中任何文字则复制粘贴一行
+    - Shift+Alt+F：代码格式化
+    - Alt+Up，Alt+Down：上下移动一行
+    - Shift+Alt+Up，Shift+Alt+Down：向上向下复制一行
+    - Ctrl+Shift+Enter：在当前行上方插入一行
+    - Ctrl+Shift+F：全局搜索
+    - 光标相关
+    - Ctrl+End：移动到文件结尾
+    - Ctrl+Home：移动到文件开头
+    - Ctrl+i：选中当前行
+    - Shift+End：选择从光标到行尾
+    - Shift+Home：选择从行首到光标处
+    - Ctrl+Shift+L：选中所有匹配
+    - Ctrl+D：选中匹配
+    - Ctrl+U：光标回退
+    - 界面相关
+    - Ctrl + \\：隐藏侧边栏
+    - Ctrl + m: 打开或者隐藏模拟器
+
+5：开发工具项目区简介：
+
+配置信息：用于解决在后台配置域名未生效的问题；
+
+预览：真机预览
+
+上传：管理员上传至后台，设置体验及审核版本使用；
+
+开发环境不校验：为了让开发环境中使用appid时，不合规则的域名也可以正常使用（比如本地或IP地址及未配置的域名）
+
+压缩代码：为了节约空间，小程序上限为1M：参考：http://www.wxapp-union.com/portal.php?mod=view&aid=934
+
+删除项目：删除相应的项目
+
+代理：在这里可以设置代理，或取消代理；用于解决很多因代理而引发的问题；
+
+
+
+选择无appid，即可在没有appid情况下进行开发，但是无法预览；
+
+项目名称：随意填写
+
+项目目录：
+
+1：如果你选择了一个demo导入，请选择app.json所在的根目录文件夹，请勿选择其上级文件夹，否则会报错：找不到app.json；
+
+2：如果你想新建一个项目，请先在电脑内新建一个空文件夹，选择空文件夹即可，假如你选择的不是空文件夹，可能无法看到新建quickstart项目；
+
+
+
+快速生成项目目录技巧：在app.json内输入路径后保存，即可生成相应路径的完整文件目录，防止因js或json文件为空而引发的一系列报错
+
+
+
+6：后台配置域名：http://www.wxapp-union.com/forum.php?mod=viewthread&tid=803；
+     必须配置域名后，才可以使用配置的域名，比如你需要请求XX地址的数据，必须在后台设置了域名之后，才可以真机请求数据；
+     必须https的域名才可以请求，如果出现https的问题，请查询排查：http://www.wxapp-union.com/forum.php?mod=viewthread&tid=648；     
+
+**新手学习可选系列：任选其一即可；**
+
+特别提示：微信小程序开发者工具版本及推出日期：
+
+介绍目的：据此日期，可以避免自己受到老教程的误导，请优先阅读/使用新日期的教程/demo；在教程中遇到困惑时，请对比官方教程，假如无法解决，请请教熟悉的同学或发帖求助；
+
+1014版本：10月14日推出：
+
+1028版本：10月28日推出：
+
+1123版本：11月23日推出：
+
+1221版本：12月21日推出：
+
+1230测试版本：12月30日推出：1304版本：1月4号推出
+
+
+以下系列仅供参考，有效期仅限于2017年1月期间，你可以在新手入门教程内看到更多：http://www.wxapp-union.com/portal.php?mod=list&catid=7、
+
+
+开发详解系列：
+
+- 《一》开发准备，开发工具使用简介，工程目录结构 ...
+- 《二》开发组件使用初步，配置
+- 《三》APP生命周期
+- 《四》页面生命周期和参数传递
+- 《五》布局基础
+
+程序员实战系列
+
+- 程序员开发实战系列《一》注册、预览小程序
+- 程序员开发实战系列《二》微信小程序架构篇
+- 程序员开发实战系列《三》App()和Page()
+- 程序员开发实战系列《四》视图层WXML绑定数据、模板、逻辑
+- 程序员开发实战系列《五》视图层WXML：事件
+
+学习记录系列
+
+- 微信小程序学习记录《一》：目录结构介绍，开发工具菜单介绍
+- 微信小程序学习记录《二》：系统配置app.json，程序和页面注册.js
+- 微信小程序学习记录《三》：视图容器
+
+至此，你应该会修改一些基本的属性了，剩下的开始遇到问题，开始跳坑：以下是最新的坑十个：
+
+你可以在这里看到整个跳坑系列：http://www.wxapp-union.com/forum.php?mod=forumdisplay&fid=2&filter=typeid&typeid=3
+
+# **三、如何解决学习过程中的问题** #
+
+1：看文档，尤其是版本更新后，可能文档已经更新，附上了你问题的说明；
+
+2：群内问，群是一个比较好的途径，但是只能解决较为简单的问题；
+
+感谢@清风迅来  提示：请各位新同学在群内提问或者是论坛提问时，尽量提供尽量多的信息，比如关键代码，最简demo，自己的报错提示，还有自己的一些看法；可以参考学习一下如何提问：http://mp.weixin.qq.com/s/yuiq4I4UKL2XBjE7SbduCQ
+
+3：论坛搜索；你可以在本站或官方社区内搜索相应的关键词，来查看是否有解决方案；你可以在这里查看搜索方法：http://www.wxapp-union.com/forum.php?mod=viewthread&tid=1824
+
+4：发帖询问，在综合交流区内发帖询问，并@几个大神；
+
+5：常见错误及基本排除方法
+
+- 1：ES6；使用es6可能导致安卓端真机调试时很多问题出现，还有其他未知问题；原因未知；
+- 2：字母拼错，包括字母拼写错误，大小写没有注意；微信小程序中，有大量这样的代码示例，从中间冒出一个大写，比如支付中的appId
+- 3：官方文档示例代码有误，有时官方文档示例代码也会出现问题，比如大小写出错，或者其他缺少参数等问题；
+- 4：https，这个坑目前遇到的人最多，首先说明一下，工具的这个设置，这个设置有一些独特的作用，让你可以让本地避开一些限制；但是这个设置对真机无效，所以假如存在https问题，是否勾选并影响；仍然需要按贴排查：http://www.wxapp-union.com/forum.php?mod=viewthread&tid=648
+- 5：重启/重装工具大法：有时候编辑器会出现一些莫名其妙的BUG，比如昨天还是好的，今天打开各种问题等等，可以考虑重新编译或多次重启工具或重启电脑；
+- 6：前人经验：有很多人遇到了很多问题，你可以在版块的问答分类下看看其他人遇到的问题及如此解决的；http://www.wxapp-union.com/forum.php?mod=forumdisplay&fid=2&page=2&filter=author&orderby=dateline&typeid=16
+- 7：无法登陆：参考@M-信念 同学的建议：可以稍微等等；当出现帐号登陆问题时，可以尝试使用他人微信号，或是咨询其他人是否也遇到了相同的情况，不要着急；
+- 8：代理设置；代理设置应该是一个隐藏比较深的坑，但是很多人被坑过，假如你的机器设置了代理，开发者工具可能会也跟着默认带来代理，然后会接踵而来很多登陆，空白等问题；
+- 9：使用搜索；现在本站聚合了大量的微信小程序相关内容，可以考虑使用本站的搜索，来获取自己想找的东西或用于解决问题，搜索时，请使用主要关键词，或相近关键词进行搜索，而不要直接搜索一句话，比如你需要appid，你可以搜索“appid”，你遇到了登陆问题，应该搜索“登陆”，真机预览遇到了问题，可以搜索“真机”，遇到了上传问题，可以搜索“uploadfile”
+- 10：微信版本问题，伴随微信的版本更新，不同的微信版本之间可能会出现不同的未知BUG；你可以在这里查看最新微信版本：weixin.qq.com
+
+6：查询官方问答：最新的官方问答系列：
